@@ -1,12 +1,12 @@
 ﻿using CarRentalGraphQL;
 using CarRentalGraphQL.Data;
-using Microsoft.AspNetCore.Builder; // Добавьте это пространство имен
+using CarRentalGraphQL.DAO;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection; // Добавьте это пространство имен
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 
-// Создание и настройка приложения
 var builder = WebApplication.CreateBuilder(args);
 
 // Настройка сервисов
@@ -14,9 +14,22 @@ builder.Services.AddDbContext<RentalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddGraphQLServer().AddQueryType<Query>().AddMutationType<Mutation>().AddProjections().AddFiltering().AddSorting();
+builder.Services.AddGraphQLServer()
+    .AddQueryType<Query>()
+    .AddMutationType<Mutation>()
+    .AddProjections()
+    .AddFiltering()
+    .AddSorting();
 
-// Создание экземпляра приложения
+// Регистрация репозиториев
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<IRenterRepository, RenterRepository>();
+builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<IRentalRepository, RentalRepository>();
+
 var app = builder.Build();
 
 // Настройка конвейера
