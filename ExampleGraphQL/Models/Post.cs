@@ -7,7 +7,7 @@ namespace CarRentalGraphQL.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
+        public long Id { get; set; }
         [Required]
         public string? Title { get; set; }
         [Required]
@@ -19,7 +19,7 @@ namespace CarRentalGraphQL.Models
         public ICollection<Comment> Comments { get; set; }
         public Post()
         {
-            Id = Guid.NewGuid();
+            
             CreateAt = DateTime.Now;
         }
     }

@@ -1,27 +1,20 @@
 ﻿using CarRentalGraphQL;
-using CarRentalGraphQL.Data;
 using CarRentalGraphQL.DAO;
+using CarRentalGraphQL.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Настройка сервисов
+builder.Services.AddCors();
 builder.Services.AddDbContext<RentalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddGraphQLServer()
-    .AddQueryType<Query>()
-    .AddMutationType<Mutation>()
-    .AddProjections()
-    .AddFiltering()
-    .AddSorting();
 
-// Регистрация репозиториев
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
@@ -30,16 +23,31 @@ builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
 builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<IRentalRepository, RentalRepository>();
 
+builder.Services.AddGraphQLServer()
+    .AddQueryType<Query>()
+    .AddProjections()
+    .AddSorting()
+    .AddFiltering();
+
 var app = builder.Build();
 
-// Настройка конвейера
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
+app.UseDeveloperExceptionPage();
+
 app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors(cors => cors
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .SetIsOriginAllowed(_ => true)
+    .AllowCredentials()
+);
 
 using (var scope = app.Services.CreateScope())
 {

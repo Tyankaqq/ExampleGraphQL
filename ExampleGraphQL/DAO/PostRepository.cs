@@ -55,7 +55,7 @@ namespace CarRentalGraphQL.DAO
             return post;
         }
 
-        public async Task DeletePost(Guid id)
+        public async Task DeletePost(long id)
         {
             var post = await db.Posts.Where(p => p.Id == id).FirstOrDefaultAsync();
             if (post != null)

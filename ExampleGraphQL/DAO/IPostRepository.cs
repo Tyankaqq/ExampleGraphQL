@@ -9,6 +9,6 @@ namespace CarRentalGraphQL.DAO
         IQueryable<Post> GetAllPostsWithComments();
         Task<Post> AddPost(string title, string content, string author);
         Task<Post> UpdatePost(Post model);
-        Task DeletePost(Guid id);
+        Task DeletePost(long id);
     }
 }

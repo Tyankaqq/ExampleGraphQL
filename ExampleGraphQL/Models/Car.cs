@@ -14,7 +14,6 @@ namespace CarRentalGraphQL.Models
         public string Model { get; set; }
         [Required]
         public bool IsAvailable { get; set; }
-
-
+       
     }
 }

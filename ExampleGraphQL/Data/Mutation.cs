@@ -1,166 +1,261 @@
-﻿using CarRentalGraphQL.Models;
-using CarRentalGraphQL.DAO;
-using HotChocolate;
+﻿using Microsoft.EntityFrameworkCore;
 using HotChocolate.Authorization;
-using HotChocolate.Types;
+using CarRentalGraphQL.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CarRentalGraphQL.Data
 {
     public class Mutation
     {
         [Serial]
-        public async Task<Post?> UpdatePost(
-            [Service] IPostRepository postRepository,
-            Post model)
+        public async Task<Post?> UpdatePost([Service] RentalDbContext context, Post model)
         {
-            return await postRepository.UpdatePost(model);
+            var post = await context.Posts.Where(p => p.Id == model.Id).FirstOrDefaultAsync();
+            if (post != null)
+            {
+                if (!string.IsNullOrEmpty(model.Title))
+                    post.Title = model.Title;
+                if (!string.IsNullOrEmpty(model.Content))
+                    post.Content = model.Content;
+                if (!string.IsNullOrEmpty(model.Author))
+                    post.Author = model.Author;
+                post.CreateAt = DateTime.Now;
+                context.Posts.Update(post);
+                await context.SaveChangesAsync();
+            }
+            return post;
         }
 
         [Serial]
-        public async Task DeletePost(
-            [Service] IPostRepository postRepository,
-            Guid id)
+        public async Task DeletePost([Service] RentalDbContext context, Post model)
         {
-            await postRepository.DeletePost(id);
+            var post = await context.Posts.Where(p => p.Id == model.Id).FirstOrDefaultAsync();
+            if (post != null)
+            {
+                context.Posts.Remove(post);
+                await context.SaveChangesAsync();
+            }
         }
 
         [Serial]
-        public async Task<Post?> InsertPost(
-            [Service] IPostRepository postRepository,
-            string _author,
-            string _content,
-            string _title)
+        public async Task<Post?> InsertPost([Service] RentalDbContext context, string author, string content, string title)
         {
-            return await postRepository.AddPost(_title, _content, _author);
+            var post = new Post
+            {
+                Author = author,
+                Content = content,
+                Title = title
+            };
+            context.Posts.Add(post);
+            await context.SaveChangesAsync();
+            return post;
         }
 
         [Serial]
-        public async Task<Car?> UpdateCar(
-            [Service] ICarRepository carRepository,
-            Car model)
+        public async Task<Car?> UpdateCar([Service] RentalDbContext context, Car model)
         {
-            return await carRepository.UpdateCar(model);
+            var car = await context.Cars.Where(c => c.Id == model.Id).FirstOrDefaultAsync();
+            if (car != null)
+            {
+                if (!string.IsNullOrEmpty(model.Make))
+                    car.Make = model.Make;
+                if (!string.IsNullOrEmpty(model.Model))
+                    car.Model = model.Model;
+                car.IsAvailable = model.IsAvailable;
+                context.Cars.Update(car);
+                await context.SaveChangesAsync();
+            }
+            return car;
         }
 
         [Serial]
-        public async Task DeleteCar(
-            [Service] ICarRepository carRepository,
-            int id)
+        public async Task DeleteCar([Service] RentalDbContext context, Car model)
         {
-            await carRepository.DeleteCar(id);
+            var car = await context.Cars.Where(c => c.Id == model.Id).FirstOrDefaultAsync();
+            if (car != null)
+            {
+                context.Cars.Remove(car);
+                await context.SaveChangesAsync();
+            }
         }
 
         [Serial]
-        public async Task<Car?> InsertCar(
-            [Service] ICarRepository carRepository,
-            string _make,
-            string _model,
-            bool _isAvailable)
+        public async Task<Car?> InsertCar([Service] RentalDbContext context, string make, string model, bool isAvailable)
         {
-            return await carRepository.AddCar(_make, _model, _isAvailable);
+            var car = new Car
+            {
+                Make = make,
+                Model = model,
+                IsAvailable = isAvailable
+            };
+            context.Cars.Add(car);
+            await context.SaveChangesAsync();
+            return car;
         }
 
         [Serial]
-        public async Task<Renter?> UpdateRenter(
-            [Service] IRenterRepository renterRepository,
-            Renter model)
+        public async Task<Renter?> UpdateRenter([Service] RentalDbContext context, Renter model)
         {
-            return await renterRepository.UpdateRenter(model);
+            var renter = await context.Renters.Where(r => r.Id == model.Id).FirstOrDefaultAsync();
+            if (renter != null)
+            {
+                if (!string.IsNullOrEmpty(model.Name))
+                    renter.Name = model.Name;
+                if (!string.IsNullOrEmpty(model.Email))
+                    renter.Email = model.Email;
+                context.Renters.Update(renter);
+                await context.SaveChangesAsync();
+            }
+            return renter;
         }
 
         [Serial]
-        public async Task DeleteRenter(
-            [Service] IRenterRepository renterRepository,
-            int id)
+        public async Task DeleteRenter([Service] RentalDbContext context, Renter model)
         {
-            await renterRepository.DeleteRenter(id);
+            var renter = await context.Renters.Where(r => r.Id == model.Id).FirstOrDefaultAsync();
+            if (renter != null)
+            {
+                context.Renters.Remove(renter);
+                await context.SaveChangesAsync();
+            }
         }
 
         [Serial]
-        public async Task<Renter?> InsertRenter(
-            [Service] IRenterRepository renterRepository,
-            string _name,
-            string _email)
+        public async Task<Renter?> InsertRenter([Service] RentalDbContext context, string name, string email)
         {
-            return await renterRepository.AddRenter(_name, _email);
+            var renter = new Renter
+            {
+                Name = name,
+                Email = email
+            };
+            context.Renters.Add(renter);
+            await context.SaveChangesAsync();
+            return renter;
         }
 
         [Serial]
-        public async Task<Manager?> UpdateManager(
-            [Service] IManagerRepository managerRepository,
-            Manager model)
+        public async Task<Manager?> UpdateManager([Service] RentalDbContext context, Manager model)
         {
-            return await managerRepository.UpdateManager(model);
+            var manager = await context.Managers.Where(m => m.Id == model.Id).FirstOrDefaultAsync();
+            if (manager != null)
+            {
+                if (!string.IsNullOrEmpty(model.Name))
+                    manager.Name = model.Name;
+                if (!string.IsNullOrEmpty(model.Email))
+                    manager.Email = model.Email;
+                context.Managers.Update(manager);
+                await context.SaveChangesAsync();
+            }
+            return manager;
         }
 
         [Serial]
-        public async Task DeleteManager(
-            [Service] IManagerRepository managerRepository,
-            int id)
+        public async Task DeleteManager([Service] RentalDbContext context, Manager model)
         {
-            await managerRepository.DeleteManager(id);
+            var manager = await context.Managers.Where(m => m.Id == model.Id).FirstOrDefaultAsync();
+            if (manager != null)
+            {
+                context.Managers.Remove(manager);
+                await context.SaveChangesAsync();
+            }
         }
 
         [Serial]
-        public async Task<Manager?> InsertManager(
-            [Service] IManagerRepository managerRepository,
-            string _name,
-            string _email)
+        public async Task<Manager?> InsertManager([Service] RentalDbContext context, string name, string email)
         {
-            return await managerRepository.AddManager(_name, _email);
+            var manager = new Manager
+            {
+                Name = name,
+                Email = email
+            };
+            context.Managers.Add(manager);
+            await context.SaveChangesAsync();
+            return manager;
         }
 
         [Serial]
-        public async Task<Service?> UpdateService(
-            [Service] IServiceRepository serviceRepository,
-            Service model)
+        public async Task<Service?> UpdateService([Service] RentalDbContext context, Service model)
         {
-            return await serviceRepository.UpdateService(model);
+            var service = await context.Services.Where(s => s.Id == model.Id).FirstOrDefaultAsync();
+            if (service != null)
+            {
+                if (!string.IsNullOrEmpty(model.Name))
+                    service.Name = model.Name;
+                service.Price = model.Price;
+                context.Services.Update(service);
+                await context.SaveChangesAsync();
+            }
+            return service;
         }
 
         [Serial]
-        public async Task DeleteService(
-            [Service] IServiceRepository serviceRepository,
-            int id)
+        public async Task DeleteService([Service] RentalDbContext context, Service model)
         {
-            await serviceRepository.DeleteService(id);
+            var service = await context.Services.Where(s => s.Id == model.Id).FirstOrDefaultAsync();
+            if (service != null)
+            {
+                context.Services.Remove(service);
+                await context.SaveChangesAsync();
+            }
         }
 
         [Serial]
-        public async Task<Service?> InsertService(
-            [Service] IServiceRepository serviceRepository,
-            string _name,
-            decimal _price)
+        public async Task<Service?> InsertService([Service] RentalDbContext context, string name, decimal price)
         {
-            return await serviceRepository.AddService(_name, _price);
+            var service = new Service
+            {
+                Name = name,
+                Price = price
+            };
+            context.Services.Add(service);
+            await context.SaveChangesAsync();
+            return service;
         }
 
         [Serial]
-        public async Task<Rental?> UpdateRental(
-            [Service] IRentalRepository rentalRepository,
-            Rental model)
+        public async Task<Rental?> UpdateRental([Service] RentalDbContext context, Rental model)
         {
-            return await rentalRepository.UpdateRental(model);
+            var rental = await context.Rentals.Where(r => r.Id == model.Id).FirstOrDefaultAsync();
+            if (rental != null)
+            {
+                rental.CarId = model.CarId;
+                rental.RenterId = model.RenterId;
+                rental.StartDate = model.StartDate;
+                rental.EndDate = model.EndDate;
+                rental.TotalCost = model.TotalCost;
+                context.Rentals.Update(rental);
+                await context.SaveChangesAsync();
+            }
+            return rental;
         }
 
         [Serial]
-        public async Task DeleteRental(
-            [Service] IRentalRepository rentalRepository,
-            int id)
+        public async Task DeleteRental([Service] RentalDbContext context, Rental model)
         {
-            await rentalRepository.DeleteRental(id);
+            var rental = await context.Rentals.Where(r => r.Id == model.Id).FirstOrDefaultAsync();
+            if (rental != null)
+            {
+                context.Rentals.Remove(rental);
+                await context.SaveChangesAsync();
+            }
         }
 
         [Serial]
-        public async Task<Rental?> InsertRental(
-            [Service] IRentalRepository rentalRepository,
-            int _carId,
-            int _renterId,
-            DateTime _startDate,
-            DateTime _endDate,
-            decimal _totalCost)
+        public async Task<Rental?> InsertRental([Service] RentalDbContext context, int carId, int renterId, DateTime startDate, DateTime endDate, decimal totalCost)
         {
-            return await rentalRepository.AddRental(_carId, _renterId, _startDate, _endDate, _totalCost);
+            var rental = new Rental
+            {
+                CarId = carId,
+                RenterId = renterId,
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalCost = totalCost
+            };
+            context.Rentals.Add(rental);
+            await context.SaveChangesAsync();
+            return rental;
         }
     }
 }

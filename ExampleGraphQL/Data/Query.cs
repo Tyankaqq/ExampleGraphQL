@@ -1,7 +1,8 @@
 ﻿using CarRentalGraphQL.Models;
+using CarRentalGraphQL.DAO;
 using HotChocolate;
-using HotChocolate.Authorization;
 using HotChocolate.Data;
+
 namespace CarRentalGraphQL.Data
 {
     public class Query
@@ -9,51 +10,79 @@ namespace CarRentalGraphQL.Data
         [UseProjection]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<Post> GetPosts([Service] RentalDbContext context) => context.Posts;
+        [GraphQLDescription("Method used to get list of all Posts")]
+        public IQueryable<Post> GetPosts([Service] IPostRepository postRepository) => postRepository.GetAllPostsOnly();
 
         [UseProjection]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<Comment> GetComments([Service] RentalDbContext context) => context.Comments;
+        [GraphQLDescription("Method used to get list of all Comments")]
+        public IQueryable<Comment> GetComments([Service] ICommentRepository commentRepository) => commentRepository.GetAllComments();
 
         [UseProjection]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<Car> GetCars([Service] RentalDbContext context) => context.Cars;
+        [GraphQLDescription("Method used to get list of all Cars")]
+        public IQueryable<Car> GetCars([Service] ICarRepository carRepository) => carRepository.GetAllCars();
 
         [UseProjection]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<Renter> GetRenters([Service] RentalDbContext context) => context.Renters;
+        [GraphQLDescription("Method used to get list of all Renters")]
+        public IQueryable<Renter> GetRenters([Service] IRenterRepository renterRepository) => renterRepository.GetAllRenters();
 
         [UseProjection]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<Manager> GetManagers([Service] RentalDbContext context) => context.Managers;
+        [GraphQLDescription("Method used to get list of all Managers")]
+        public IQueryable<Manager> GetManagers([Service] IManagerRepository managerRepository) => managerRepository.GetAllManagers();
 
         [UseProjection]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<Service> GetServices([Service] RentalDbContext context) => context.Services;
+        [GraphQLDescription("Method used to get list of all Services")]
+        public IQueryable<Service> GetServices([Service] IServiceRepository serviceRepository) => serviceRepository.GetAllServices();
 
         [UseProjection]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<Rental> GetRentals([Service] RentalDbContext context) => context.Rentals;
+        [GraphQLDescription("Method used to get list of all Rentals")]
+        public IQueryable<Rental> GetRentals([Service] IRentalRepository rentalRepository) => rentalRepository.GetAllRentals();
 
-        public IQueryable<Car> GetAvailableCars([Service] RentalDbContext context) =>
-            context.Cars.Where(c => c.IsAvailable);
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        [GraphQLDescription("Method used to get available Cars")]
+        public IQueryable<Car> GetAvailableCars([Service] ICarRepository carRepository) =>
+            carRepository.GetAllCars().Where(c => c.IsAvailable);
 
-        public IQueryable<Car> GetRentedCars([Service] RentalDbContext context) =>
-            context.Cars.Where(c => !c.IsAvailable);
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        [GraphQLDescription("Method used to get rented Cars")]
+        public IQueryable<Car> GetRentedCars([Service] ICarRepository carRepository) =>
+            carRepository.GetAllCars().Where(c => !c.IsAvailable);
 
-        public IQueryable<Car> GetCarsAvailableOnDate([Service] RentalDbContext context, DateTime date) =>
-            context.Cars.Where(c => c.IsAvailable && !context.Rentals.Any(r => r.CarId == c.Id && r.StartDate <= date && r.EndDate >= date));
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        [GraphQLDescription("Method used to get Cars available on a specific date")]
+        public IQueryable<Car> GetCarsAvailableOnDate([Service] ICarRepository carRepository, [Service] RentalDbContext context, DateTime date) =>
+            carRepository.GetAllCars().Where(c => c.IsAvailable && !context.Rentals
+                .Any(r => r.CarId == c.Id && r.StartDate <= date && r.EndDate >= date));
 
-        public IQueryable<Renter> GetDebtors([Service] RentalDbContext context) =>
-            context.Renters.Where(r => r.Rentals.Any(rental => rental.TotalCost > 0));
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        [GraphQLDescription("Method used to get Debtors (Renters with unpaid rentals)")]
+        public IQueryable<Renter> GetDebtors([Service] IRenterRepository renterRepository) =>
+            renterRepository.GetAllRenters().Where(r => r.Rentals.Any(rental => rental.TotalCost > 0));
 
-        public decimal GetTotalCost([Service] RentalDbContext context, DateTime startDate, DateTime endDate) =>
-            context.Rentals.Where(r => r.StartDate >= startDate && r.EndDate <= endDate).Sum(r => r.TotalCost);
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        [GraphQLDescription("Method used to get the total cost of rentals within a date range")]
+        public decimal GetTotalCost([Service] IRentalRepository rentalRepository, DateTime startDate, DateTime endDate) =>
+            rentalRepository.GetAllRentals().Where(r => r.StartDate >= startDate && r.EndDate <= endDate).Sum(r => r.TotalCost);
     }
 }

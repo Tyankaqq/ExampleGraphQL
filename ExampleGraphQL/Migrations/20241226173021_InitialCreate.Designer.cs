@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExampleGraphQL.Migrations
 {
     [DbContext(typeof(RentalDbContext))]
-    [Migration("20241225203107_MigrationName")]
-    partial class MigrationName
+    [Migration("20241226173021_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -51,9 +51,11 @@ namespace ExampleGraphQL.Migrations
 
             modelBuilder.Entity("CarRentalGraphQL.Models.Comment", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Author")
                         .IsRequired()
@@ -66,8 +68,8 @@ namespace ExampleGraphQL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -99,9 +101,11 @@ namespace ExampleGraphQL.Migrations
 
             modelBuilder.Entity("CarRentalGraphQL.Models.Post", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Author")
                         .IsRequired()

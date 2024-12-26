@@ -1,72 +1,53 @@
-﻿
+﻿using Faker;
 using CarRentalGraphQL.Models;
-using Faker;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using Bogus;
 
 namespace CarRentalGraphQL.Data
 {
-    public static class DataSeeder
+    public class DataSeeder
     {
         public static void SeedData(RentalDbContext db)
         {
-            if (!db.Posts.Any())
+            Random random = new Random();
+
+            // Добавление данных в таблицу Services
+            if (!db.Services.Any())
             {
-                for (int i = 1; i <= 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
-                    var post = new Post
+                    var service = new Service
                     {
-                        Title = Lorem.Sentence(),
-                        Content = Lorem.Paragraphs(3).FirstOrDefault(),
-                        Author = Name.FullName(),
-                        CreateAt = DateTime.Now
+                        Name = Lorem.Sentence(2),
+                        Price = (decimal)(random.NextDouble() * 100)
                     };
-                    db.Posts.Add(post);
-                    for (int j = 0; j < 10; j++)
-                    {
-                        var comment = new Comment
-                        {
-                            Content = Lorem.Sentence(),
-                            Author = Name.FullName(),
-                            CreatedAt = DateTime.Now,
-                            Post = post
-                        };
-                        db.Comments.Add(comment);
-                    }
+                    db.Services.Add(service);
                 }
                 db.SaveChanges();
             }
 
-            if (!db.Cars.Any())
-            {
-                for (int i = 1; i <= 10; i++)
-                {
-                    var car = new Car
-                    {
-                        Make = Vehicle.Make(),
-                        Model = Vehicle.Model(),
-                        IsAvailable = true
-                    };
-                    db.Cars.Add(car);
-                }
-                db.SaveChanges();
-            }
-
+            // Добавление данных в таблицу Renters
             if (!db.Renters.Any())
             {
-                for (int i = 1; i <= 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     var renter = new Renter
                     {
                         Name = Name.FullName(),
-                        Email = Internet.Email()
+                        Email = Internet.Email(),
+                        
                     };
                     db.Renters.Add(renter);
                 }
                 db.SaveChanges();
             }
 
+            // Добавление данных в таблицу Managers
             if (!db.Managers.Any())
             {
-                for (int i = 1; i <= 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     var manager = new Manager
                     {
@@ -78,16 +59,79 @@ namespace CarRentalGraphQL.Data
                 db.SaveChanges();
             }
 
-            if (!db.Services.Any())
+            // Добавление данных в таблицу Cars
+            if (!db.Cars.Any())
             {
-                for (int i = 1; i <= 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
-                    var service = new Service
+                    var car = new Car
                     {
-                        Name = Commerce.ProductName(),
-                        Price = RandomNumber.Next(100, 1000)
+                        Make = Vehicle.Make(),
+                        Model = Vehicle.Model(),
+                        IsAvailable = random.Next(0, 2) == 1
                     };
-                    db.Services.Add(service);
+                    db.Cars.Add(car);
+                }
+                db.SaveChanges();
+            }
+
+            // Добавление данных в таблицу Rentals
+            if (!db.Rentals.Any())
+            {
+                if (!db.Cars.Any() || !db.Renters.Any())
+                {
+                    throw new InvalidOperationException("The 'Cars' or 'Renters' table is empty. Seed them first.");
+                }
+
+                var cars = db.Cars.ToList();
+                var renters = db.Renters.ToList();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    var rental = new Rental
+                    {
+                        CarId = cars[random.Next(cars.Count)].Id,
+                        RenterId = renters[random.Next(renters.Count)].Id,
+                        StartDate = DateTime.Now.AddDays(-random.Next(1, 30)),
+                        EndDate = DateTime.Now.AddDays(random.Next(1, 30)),
+                        TotalCost = (decimal)(random.NextDouble() * 1000)
+                    };
+                    db.Rentals.Add(rental);
+                }
+                db.SaveChanges();
+            }
+
+            // Добавление данных в таблицу Comments
+            if (!db.Comments.Any())
+            {
+                var posts = db.Posts.ToList();
+                for (int i = 0; i < 20; i++)
+                {
+                    var comment = new Comment
+                    {
+                        Content = Lorem.Sentence(),
+                        Author = Name.FullName(),
+                        CreatedAt = DateTime.Now.AddDays(-random.Next(1, 30)),
+                        PostId = posts[random.Next(posts.Count)].Id
+                    };
+                    db.Comments.Add(comment);
+                }
+                db.SaveChanges();
+            }
+
+            // Добавление данных в таблицу Posts
+            if (!db.Posts.Any())
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    var post = new Post
+                    {
+                        Title = Lorem.Sentence(),
+                        Content = Lorem.Paragraph(),
+                        Author = Name.FullName(),
+                        CreateAt = DateTime.Now.AddDays(-random.Next(1, 30))
+                    };
+                    db.Posts.Add(post);
                 }
                 db.SaveChanges();
             }

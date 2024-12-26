@@ -20,12 +20,12 @@ namespace CarRentalGraphQL.DAO
             return db.Comments.AsQueryable();
         }
 
-        public List<Comment> GetCommentsByPostId(Guid postId)
+        public List<Comment> GetCommentsByPostId(long postId)
         {
             return db.Comments.Where(c => c.PostId == postId).ToList();
         }
 
-        public async Task<Comment> AddComment(string content, string author, Guid postId)
+        public async Task<Comment> AddComment(string content, string author, long postId)
         {
             Comment comment = new Comment
             {
@@ -54,7 +54,7 @@ namespace CarRentalGraphQL.DAO
             return comment;
         }
 
-        public async Task DeleteComment(Guid id)
+        public async Task DeleteComment(long id)
         {
             var comment = await db.Comments.Where(c => c.Id == id).FirstOrDefaultAsync();
             if (comment != null)
